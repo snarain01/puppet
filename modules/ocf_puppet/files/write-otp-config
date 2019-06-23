@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+if [ "$#" -ne 2 ]; then
+    echo "Usage: write-otp-config <username> <yubikey public ID>"
+    exit 1
+fi
+
+username="$1"
+yubikeyID="$2"
+
+if grep -q "^$username:" /opt/puppet/shares/private/otp/yubikeys; then
+    echo "$username already registered. Appending yubikey, not reconfiguring google authenticator."
+    sed -i "/^$username:/ s/$/:$yubikeyID/" /opt/puppet/shares/private/otp/yubikeys
+    exit 0
+fi
+
+echo "$username:$yubikeyID" >> /opt/puppet/shares/private/otp/yubikeys
+
+googleAuthFile="/opt/puppetlabs/shares/private/otp/google-authenticator/$username"
+google-authenticator -tDufw 1 -l "ocf: $username" -i OCF -s "$googleAuthFile"
+chmod 400 "$googleAuthFile"
+chown puppet:puppet "$googleAuthFile"
