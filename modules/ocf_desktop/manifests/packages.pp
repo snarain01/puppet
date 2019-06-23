@@ -44,7 +44,7 @@ class ocf_desktop::packages {
     # performance improvements
     ['preload']:;
     # security tools
-    ['scdaemon']:;
+    ['scdaemon', 'yubikey-manager']:;
     # utilities
     ['wakeonlan']:;
     # Xorg
